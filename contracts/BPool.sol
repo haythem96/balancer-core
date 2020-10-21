@@ -197,7 +197,7 @@ contract BPool is BBronze, BToken, BMath {
     { 
         require(!_finalized, "ERR_IS_FINALIZED");
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
-        require(swapFee >= MIN_FEE, "ERR_MIN_FEE");
+        require(swapFee ** 8 >= MIN_FEE, "ERR_MIN_FEE");
         require(swapFee <= MAX_FEE, "ERR_MAX_FEE");
         _swapFee = swapFee;
     }
@@ -237,7 +237,6 @@ contract BPool is BBronze, BToken, BMath {
         _pushPoolShare(msg.sender, INIT_POOL_SUPPLY);
     }
 
-
     function bind(address token, uint balance, uint denorm)
         external
         _logs_
@@ -256,7 +255,7 @@ contract BPool is BBronze, BToken, BMath {
             balance: 0   // and set by `rebind`
         });
         _tokens.push(token);
-        rebind(token, balance, denorm);
+        rebind(token, balance*10**9, denorm*10**9);
     }
 
     function rebind(address token, uint balance, uint denorm)
@@ -264,7 +263,6 @@ contract BPool is BBronze, BToken, BMath {
         _logs_
         _lock_
     {
-
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(_records[token].bound, "ERR_NOT_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
@@ -371,8 +369,8 @@ contract BPool is BBronze, BToken, BMath {
     {
         require(_finalized, "ERR_NOT_FINALIZED");
 
-        uint poolTotal = totalSupply();
-        uint ratio = bdiv(poolAmountOut, poolTotal);
+        uint poolTotal = totalSupply() * 10**9;
+        uint ratio = bdiv(poolAmountOut * 10**9, poolTotal);
         require(ratio != 0, "ERR_MATH_APPROX");
 
         for (uint i = 0; i < _tokens.length; i++) {
@@ -440,28 +438,28 @@ contract BPool is BBronze, BToken, BMath {
         Record storage inRecord = _records[address(tokenIn)];
         Record storage outRecord = _records[address(tokenOut)];
 
-        require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
+        require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO)/10**9, "ERR_MAX_IN_RATIO");
 
         uint spotPriceBefore = calcSpotPrice(
                                     inRecord.balance,
                                     inRecord.denorm,
                                     outRecord.balance,
                                     outRecord.denorm,
-                                    _swapFee
+                                    _swapFee*10**9
                                 );
-        require(spotPriceBefore <= maxPrice, "ERR_BAD_LIMIT_PRICE");
+        require(spotPriceBefore <= maxPrice * 10**9, "ERR_BAD_LIMIT_PRICE");
 
         tokenAmountOut = calcOutGivenIn(
                             inRecord.balance,
                             inRecord.denorm,
                             outRecord.balance,
                             outRecord.denorm,
-                            tokenAmountIn,
-                            _swapFee
+                            tokenAmountIn * 10**9,
+                            _swapFee * 10**9
                         );
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
 
-        inRecord.balance = badd(inRecord.balance, tokenAmountIn);
+        inRecord.balance = badd(inRecord.balance, tokenAmountIn * 10**9);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
 
         spotPriceAfter = calcSpotPrice(
@@ -469,11 +467,11 @@ contract BPool is BBronze, BToken, BMath {
                                 inRecord.denorm,
                                 outRecord.balance,
                                 outRecord.denorm,
-                                _swapFee
+                                _swapFee*10**9
                             );
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");     
-        require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
-        require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
+        require(spotPriceAfter <= maxPrice*10**9, "ERR_LIMIT_PRICE");
+        require(spotPriceBefore <= bdiv(tokenAmountIn*10**9, tokenAmountOut), "ERR_MATH_APPROX");
 
         emit LOG_SWAP(msg.sender, tokenIn, tokenOut, tokenAmountIn, tokenAmountOut);
 
@@ -511,7 +509,7 @@ contract BPool is BBronze, BToken, BMath {
                                     outRecord.denorm,
                                     _swapFee
                                 );
-        require(spotPriceBefore <= maxPrice, "ERR_BAD_LIMIT_PRICE");
+        require(spotPriceBefore <= maxPrice * 10**9, "ERR_BAD_LIMIT_PRICE");
 
         tokenAmountIn = calcInGivenOut(
                             inRecord.balance,
@@ -534,7 +532,7 @@ contract BPool is BBronze, BToken, BMath {
                                 _swapFee
                             );
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
-        require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
+        require(spotPriceAfter <= maxPrice * 10**9, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 
         emit LOG_SWAP(msg.sender, tokenIn, tokenOut, tokenAmountIn, tokenAmountOut);
@@ -602,7 +600,7 @@ contract BPool is BBronze, BToken, BMath {
                         );
 
         require(tokenAmountIn != 0, "ERR_MATH_APPROX");
-        require(tokenAmountIn <= maxAmountIn, "ERR_LIMIT_IN");
+        require(tokenAmountIn <= maxAmountIn * 10**9, "ERR_LIMIT_IN");
         
         require(tokenAmountIn <= bmul(_records[tokenIn].balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
 
@@ -677,7 +675,7 @@ contract BPool is BBronze, BToken, BMath {
                         );
 
         require(poolAmountIn != 0, "ERR_MATH_APPROX");
-        require(poolAmountIn <= maxPoolAmountIn, "ERR_LIMIT_IN");
+        require(poolAmountIn <= maxPoolAmountIn * 10**9, "ERR_LIMIT_IN");
 
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
 
@@ -701,14 +699,14 @@ contract BPool is BBronze, BToken, BMath {
     function _pullUnderlying(address erc20, address from, uint amount)
         internal
     {
-        bool xfer = IERC20(erc20).transferFrom(from, address(this), amount);
+        bool xfer = IERC20(erc20).transferFrom(from, address(this), amount/10**9);
         require(xfer, "ERR_ERC20_FALSE");
     }
 
     function _pushUnderlying(address erc20, address to, uint amount)
         internal
     {
-        bool xfer = IERC20(erc20).transfer(to, amount);
+        bool xfer = IERC20(erc20).transfer(to, amount/10**9);
         require(xfer, "ERR_ERC20_FALSE");
     }
 

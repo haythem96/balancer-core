@@ -16,7 +16,9 @@ pragma solidity 0.5.12;
 import "./BColor.sol";
 
 contract BConst is BBronze {
-    uint public constant BONE              = 10**18;
+    uint public constant BASE_DECIMALS = 27; 
+
+    uint public constant BONE              = 10**BASE_DECIMALS;
 
     uint public constant MIN_BOUND_TOKENS  = 2;
     uint public constant MAX_BOUND_TOKENS  = 8;
@@ -25,7 +27,7 @@ contract BConst is BBronze {
     uint public constant MAX_FEE           = BONE / 10;
     uint public constant EXIT_FEE          = 0;
 
-    uint public constant MIN_WEIGHT        = BONE / 2;
+    uint public constant MIN_WEIGHT        = BONE;  
     uint public constant MAX_WEIGHT        = BONE * 50;
     uint public constant MAX_TOTAL_WEIGHT  = BONE * 50;
     uint public constant MIN_BALANCE       = BONE / 10**12;
