@@ -197,7 +197,7 @@ contract BPool is BBronze, BToken, BMath {
     { 
         require(!_finalized, "ERR_IS_FINALIZED");
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
-        require(swapFee ** 8 >= MIN_FEE, "ERR_MIN_FEE");
+        require(swapFee * 10**9 >= MIN_FEE, "ERR_MIN_FEE");
         require(swapFee <= MAX_FEE, "ERR_MAX_FEE");
         _swapFee = swapFee;
     }
