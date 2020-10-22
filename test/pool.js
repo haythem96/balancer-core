@@ -354,8 +354,9 @@ contract('BPool', async (accounts) => {
         it('User1 joins pool', async () => {
             await pool.joinPool(toWei('5'), [MAX, MAX, MAX], { from: user1 });
             const daiBalance = await pool.getBalance(DAI);
-            assert.equal(10000000000000.0000005, fromWei(daiBalance));
+            assert.equal(10000000000500, fromWei(daiBalance));
             const userWethBalance = await weth.balanceOf(user1);
+            console.log(userWethBalance.toString())
             assert.equal(22.5, fromWei(userWethBalance));
         });
 
@@ -376,6 +377,7 @@ contract('BPool', async (accounts) => {
             assert.equal(200000000000, fromWei(wethPrice));
 
             const wethPriceFee = await pool.getSpotPrice(DAI, WETH);
+            console.log(wethPriceFee.toString())
             const wethPriceFeeCheck = ((10500 / 5) / (52.5 / 5)) * (1 / (1 - 0.003));
             // 200.6018054162487462
             assert.equal(fromWei(wethPriceFee), wethPriceFeeCheck);
@@ -408,7 +410,7 @@ contract('BPool', async (accounts) => {
             // 475.905805337091423
 
             const actual = fromWei(log.args[4]);
-            const relDif = calcRelativeDiff(expected, actual);
+            const relDif = calcRelativeDiff(expected, actual / 10**9);
             if (verbose) {
                 console.log('swapExactAmountIn');
                 console.log(`expected: ${expected})`);
@@ -447,7 +449,7 @@ contract('BPool', async (accounts) => {
             // 2.758274824473420261
 
             const actual = fromWei(log.args[3]);
-            const relDif = calcRelativeDiff(expected, actual);
+            const relDif = calcRelativeDiff(expected, actual / 10**9);
             if (verbose) {
                 console.log('swapExactAmountOut');
                 console.log(`expected: ${expected})`);
