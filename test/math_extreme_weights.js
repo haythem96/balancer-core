@@ -1,6 +1,6 @@
 const Decimal = require('decimal.js');
 const truffleAssert = require('truffle-assertions');
-const { calcRelativeDiff } = require('../lib/calc_comparisons');
+const { calcRelativeDiff, calcOutGivenIn, calcInGivenOut } = require('../lib/calc_comparisons');
 
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
@@ -123,8 +123,11 @@ contract('BPool', async (accounts) => {
                 tokenIn, tokenInAmount, tokenOut, minAmountOut, maxPrice,
             );
 
+            let expected = calcOutGivenIn(1000, 1, 1000, 49, 500, 0.001);
+            console.log(expected.toString())
+
             // Checking outputs
-            let expected = Decimal('8.23390841016124456');
+            // let expected = Decimal('8.23390841016124456');
             let actual = Decimal(fromWei(output.tokenAmountOut));
             let relDif = calcRelativeDiff(expected, actual);
 

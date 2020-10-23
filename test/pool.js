@@ -409,8 +409,8 @@ contract('BPool', async (accounts) => {
             assert.equal(log.event, 'LOG_SWAP');
             // 475.905805337091423
 
-            const actual = fromWei(log.args[4]);
-            const relDif = calcRelativeDiff(expected, actual / 10**9);
+            const actual = fromWei(log.args[4]) / 10**9;
+            const relDif = calcRelativeDiff(expected, actual);
             if (verbose) {
                 console.log('swapExactAmountIn');
                 console.log(`expected: ${expected})`);
@@ -448,8 +448,8 @@ contract('BPool', async (accounts) => {
             assert.equal(log.event, 'LOG_SWAP');
             // 2.758274824473420261
 
-            const actual = fromWei(log.args[3]);
-            const relDif = calcRelativeDiff(expected, actual / 10**9);
+            const actual = fromWei(log.args[3]) / 10**9;
+            const relDif = calcRelativeDiff(expected, actual);
             if (verbose) {
                 console.log('swapExactAmountOut');
                 console.log(`expected: ${expected})`);
